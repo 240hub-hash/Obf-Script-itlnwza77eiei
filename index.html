@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-gray-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITlnwza77 Studio - Lua Obfuscator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            background-color: #000000 !important;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-mono-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Lock editor box height */
+        .editor-box {
+            height: 480px;
+        }
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #404040;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black text-white flex flex-col justify-between antialiased selection:bg-white selection:text-black">
+
+    <!-- Navbar -->
+    <header class="border-b border-neutral-800 bg-black/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="px-2.5 py-1 rounded-lg bg-white text-black font-extrabold text-sm font-mono tracking-wider shadow-md">
+                    ITlnwza77
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-wide flex items-center gap-2">
+                        Lua Obfuscator <span class="text-xs font-mono px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 border border-neutral-700">v4.0</span>
+                    </h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-mono text-neutral-400">
+                <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 text-neutral-200 border border-neutral-700">
+                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                    พร้อมใช้งาน
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col gap-6">
+
+        <!-- 2 Columns Horizontal Layout (Side by Side) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            
+            <!-- Input Editor -->
+            <div class="bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden flex flex-col shadow-2xl editor-box">
+                <div class="bg-neutral-900/80 border-b border-neutral-800 px-4 py-3 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-4 h-4 text-white"></i>
+                        <span class="text-xs font-bold text-neutral-300 tracking-wider uppercase font-mono-code">สคริปต์ต้นฉบับ (Input)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btnSample" class="text-xs px-2.5 py-1 rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition border border-neutral-700">
+                            ตัวอย่าง
+                        </button>
+                        <button id="btnClear" class="text-xs px-2.5 py-1 rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition border border-neutral-700">
+                            ล้าง
+                        </button>
+                    </div>
+                </div>
+                <textarea id="inCode" spellcheck="false" class="w-full flex-1 bg-black p-4 font-mono-code text-xs text-neutral-200 outline-none resize-none leading-relaxed border-none focus:ring-0 placeholder-neutral-600 overflow-y-auto" placeholder="-- วางโค้ด Lua ของคุณที่นี่..."></textarea>
+            </div>
+
+            <!-- Output Editor -->
+            <div class="bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden flex flex-col shadow-2xl editor-box">
+                <div class="bg-neutral-900/80 border-b border-neutral-800 px-4 py-3 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="lock" class="w-4 h-4 text-white"></i>
+                        <span class="text-xs font-bold text-neutral-300 tracking-wider uppercase font-mono-code">สคริปต์เข้ารหัสแล้ว (Output)</span>
+                    </div>
+                    <span id="outMeta" class="text-xs font-mono text-neutral-400 bg-black px-2.5 py-1 rounded border border-neutral-800">
+                        0 lines
+                    </span>
+                </div>
+                <textarea id="outCode" readonly spellcheck="false" class="w-full flex-1 bg-black p-4 font-mono-code text-xs text-neutral-100 outline-none resize-none leading-relaxed border-none focus:ring-0 placeholder-neutral-700 overflow-y-auto" placeholder="-- ผลลัพธ์โค้ดที่ผ่านการเข้ารหัสจะแสดงที่นี่..."></textarea>
+            </div>
+
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-4 py-2">
+            <button id="btnObfuscate" class="px-8 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-sm tracking-wide shadow-lg transition transform active:scale-95 flex items-center gap-2 border border-white">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                เข้ารหัสสคริปต์
+            </button>
+            <button id="btnCopy" class="px-6 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-sm border border-neutral-700 transition flex items-center gap-2">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                คัดลอกโค้ด
+            </button>
+            <button id="btnDownload" class="px-6 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-sm border border-neutral-700 transition flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                ดาวน์โหลด .lua
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-neutral-900 py-4 text-center text-xs text-neutral-500 font-mono">
+        ITlnwza77 Studio - Lua Protection Engine &copy; 2026
+    </footer>
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-neutral-900 border border-neutral-700 text-white px-4 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 z-50 flex items-center gap-3 text-xs font-medium font-mono">
+        <i data-lucide="info" class="w-4 h-4 text-white"></i>
+        <span id="toastMsg">แจ้งเตือน</span>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loaderOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-neutral-950 border border-neutral-800 p-8 rounded-2xl flex flex-col items-center gap-4 max-w-sm w-full mx-4 shadow-2xl">
+            <div class="w-12 h-12 border-4 border-neutral-700 border-t-white rounded-full animate-spin"></div>
+            <div class="w-full bg-black h-1.5 rounded-full overflow-hidden border border-neutral-800 mt-2">
+                <div id="loaderProgressFill" class="bg-white h-full w-0 transition-all duration-300"></div>
+            </div>
+            <p id="loaderText" class="text-xs font-mono text-neutral-400 text-center">กำลังเข้ารหัสสคริปต์...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        const inCode = document.getElementById('inCode');
+        const outCode = document.getElementById('outCode');
+        const outMeta = document.getElementById('outMeta');
+
+        // Update line counts
+        outCode.addEventListener('input', () => {
+            const lines = outCode.value.split('\n').length;
+            outMeta.textContent = lines + ' lines';
+        });
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Sample Button
+        document.getElementById('btnSample').addEventListener('click', () => {
+            inCode.value = `-- ITlnwza77 Studio Sample Lua Script
+local player = game.Players.LocalPlayer
+print("Welcome to ITlnwza77 Studio Obfuscator, " .. player.Name)
+
+local function checkStatus(val)
+    if val > 50 then
+        return "High"
+    else
+        return "Low"
+    end
+end
+
+print("Current Status:", checkStatus(75))`;
+            showToast("โหลดตัวอย่างโค้ดเรียบร้อยแล้ว");
+        });
+
+        // Clear Button
+        document.getElementById('btnClear').addEventListener('click', () => {
+            inCode.value = '';
+            outCode.value = '';
+            outMeta.textContent = '0 lines';
+            showToast("ล้างข้อมูลเรียบร้อยแล้ว");
+        });
+
+        // Obfuscation Engine
+        const ALPHABET = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+        
+        function randomBytes(length) {
+            const result = new Uint8Array(length);
+            for (let i = 0; i < length; i++) {
+                result[i] = Math.floor(Math.random() * 256);
+            }
+            return result;
+        }
+
+        function encodePrintable(bytes) {
+            let result = "";
+            for (let i = 0; i < bytes.length; i++) {
+                const val = bytes[i];
+                result += ALPHABET[Math.floor(val / ALPHABET.length)] + ALPHABET[val % ALPHABET.length];
+            }
+            return result;
+        }
+
+        function encryptChunk(bytes, key, seed) {
+            const result = new Uint8Array(bytes.length);
+            for (let i = 0; i < bytes.length; i++) {
+                const k1 = key[(i + seed) % key.length];
+                const mask = (seed + i * 17) & 255;
+                result[i] = bytes[i] ^ k1 ^ mask;
+            }
+            return result;
+        }
+
+        // Generate Lua Decoy Statements for Anti-Deobfuscation
+        function generateUniqueLuaDecoys() {
+            const luaKeywords = ["env", "ctx", "registry", "cache", "vector", "matrix", "proxy", "session", "node", "buffer", "pointer", "segment", "payload", "handler", "instance", "routine", "signature", "slot", "cluster", "hash"];
+            const functionNames = ["initEnv", "verifyState", "checkBuffer", "parseCache", "validateToken", "loadVector", "dispatchProxy", "buildTable", "compileMeta", "fetchCrypto", "allocSlot", "resolveNode", "computeHash", "verifyPtr", "executeChunk", "initVM", "execRoutine", "verifyFlag", "syncRegistry", "assertSecure"];
+            
+            let statements = [];
+            const count = 90 + Math.floor(Math.random() * 50);
+            const saltKey = Math.floor(Math.random() * 99999999);
+            
+            for (let i = 0; i < count; i++) {
+                const kw = luaKeywords[Math.floor(Math.random() * luaKeywords.length)];
+                const fn = functionNames[Math.floor(Math.random() * functionNames.length)] + "_" + (saltKey + i * 37) % 999999;
+                const vn = kw + "_" + (saltKey + i * 53) % 999999;
+                const randVal = Math.floor(Math.random() * 100000);
+                
+                const variant = i % 5;
+                if (variant === 0) {
+                    statements.push("local function " + fn + "(x, y) local " + vn + " = (x * " + randVal + ") + (y or 1); return setmetatable({v = " + vn + "}, {__index = function(t, k) return rawget(t, k) or \"" + kw + "_val_" + i + "\" end}) end");
+                } else if (variant === 1) {
+                    statements.push("local " + vn + " = { status = true, timestamp = os.time(), code = \"" + fn + "\", salt = " + (randVal + i) + ", mode = \"" + kw + "\" }");
+                } else if (variant === 2) {
+                    statements.push("local function " + fn + "() local " + vn + " = {}; for i = 1, 12 do " + vn + "[i] = i * " + (randVal % 19 + 1) + " end return " + vn + " end");
+                } else if (variant === 3) {
+                    statements.push("local " + vn + " = setmetatable({name = \"" + kw + "_" + i + "\"}, { __mode = \"kv\", __call = function(self, ...) return \"" + fn + "\" end })");
+                } else {
+                    statements.push("local " + vn + " = (function() local t = {} t.id = " + (randVal + i) + " t.type = \"" + kw + "\" return t end)()");
+                }
+            }
+            return statements.join(";");
+        }
+
+        function buildLuaLoader(parts) {
+            const payload = parts.map(p => `{d=${JSON.stringify(p.data)},k=${JSON.stringify(p.key)},s=${p.seed},o=${p.order}}`).join(",");
+            const decoysStr = generateUniqueLuaDecoys();
+            return `return (function(...) local h1={${payload}};local h2="";local h3=${JSON.stringify(ALPHABET)};${decoysStr};local h4=function(a,b)local r=0;local p=1;while a>0 or b>0 do local x=a%2;local y=b%2;if x~=y then r=r+p end;a=math.floor(a/2);b=math.floor(b/2);p=p*2 end;return r end;local h5=function(s)local t={};for i=1,#s do local c=string.sub(s,i,i);local v=string.find(h3,c,1,true);if not v then return nil end;t[#t+1]=v-1 end;local o={};for i=1,#t,2 do local a=t[i];local b=t[i+1];if b==nil then return nil end;o[#o+1]=a*#h3+b end;return o end;table.sort(h1,function(a,b)return a.o<b.o end);for h6=1,#h1 do local h7=h1[h6];local h8=h5(h7.d);local h9=h5(h7.k);if not h8 or not h9 then error("Invalid") end;local h10=h7.s;for h11=1,#h8 do local h12=h9[((h11-1+h10)%#h9)+1];local h14=(h10+(h11-1)*17)%256;local h15=h4(h8[h11],h12);h15=h4(h15,h14);h2=h2..string.char(h15) end end;local h16=loadstring or load;local h17,h18=h16(h2);if not h17 then error(tostring(h18)) end;return h17(...) end)(...)`;
+        }
+
+        // Obfuscate Action
+        document.getElementById('btnObfuscate').addEventListener('click', () => {
+            const raw = inCode.value;
+            if (!raw.trim()) {
+                showToast("กรุณาวางโค้ด Lua ก่อนเข้ารหัส");
+                return;
+            }
+
+            const loaderOverlay = document.getElementById('loaderOverlay');
+            const loaderText = document.getElementById('loaderText');
+            const progressFill = document.getElementById('loaderProgressFill');
+            
+            if (loaderOverlay) loaderOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            if (progressFill) progressFill.style.width = '20%';
+            if (loaderText) loaderText.textContent = "กำลังวิเคราะห์โครงสร้างโค้ดและสร้างตัวหลอก...";
+
+            setTimeout(() => {
+                if (progressFill) progressFill.style.width = '60%';
+                if (loaderText) loaderText.textContent = "กำลังเข้ารหัสข้อมูลสคริปต์...";
+                
+                setTimeout(() => {
+                    try {
+                        const sourceBytes = new TextEncoder().encode(raw);
+                        const chunks = [];
+                        for (let i = 0; i < sourceBytes.length; i += 24) {
+                            chunks.push(sourceBytes.slice(i, Math.min(i + 24, sourceBytes.length)));
+                        }
+
+                        const parts = [];
+                        for (let i = 0; i < chunks.length; i++) {
+                            const chunk = chunks[i];
+                            const key = randomBytes(Math.max(48, chunk.length + 16));
+                            const seed = Math.floor(Math.random() * 0x7fffffff);
+                            const encrypted = encryptChunk(chunk, key, seed);
+
+                            parts.push({
+                                data: encodePrintable(encrypted),
+                                key: encodePrintable(key),
+                                seed: seed,
+                                order: i
+                            });
+                        }
+
+                        const loader = buildLuaLoader(parts);
+
+                        const asciiBanner = [
+                            "--  .______________ .__                               __________________  ",
+                            "--  |   \\__    ___/ |  |   ______  _  _______________\\______   \\______   \\ ",
+                            "--  |   | |    |    |  |  /    \\ \\/ \\/ /\\___    /\\__  \\   /    /   /    / ",
+                            "--  |   | |    |    |  |_|   |  \\     /  /    /  / __ \\_/    /   /    /  ",
+                            "--  |___| |____|    |____/___|  /\\/\\_/  /_____ \\(____  /____/   /____/   ",
+                            "--                            \\/              \\/     \\/                  "
+                        ].join("\n");
+
+                        if (progressFill) progressFill.style.width = '100%';
+                        if (loaderText) loaderText.textContent = "เข้ารหัสสำเร็จเรียบร้อย!";
+
+                        setTimeout(() => {
+                            outCode.value = asciiBanner + "\n\n" + loader;
+                            outMeta.textContent = outCode.value.split('\n').length + ' lines';
+                            showToast("เข้ารหัสสคริปต์สำเร็จเรียบร้อย");
+                            if (loaderOverlay) loaderOverlay.classList.add('opacity-0', 'pointer-events-none');
+                            if (progressFill) progressFill.style.width = '0%';
+                        }, 300);
+
+                    } catch (err) {
+                        console.error(err);
+                        showToast("เกิดข้อผิดพลาดในการเข้ารหัส");
+                        if (loaderOverlay) loaderOverlay.classList.add('opacity-0', 'pointer-events-none');
+                        if (progressFill) progressFill.style.width = '0%';
+                    }
+                }, 400);
+            }, 400);
+        });
+
+        // Copy Action
+        document.getElementById('btnCopy').addEventListener('click', () => {
+            const val = outCode.value;
+            if (!val) {
+                showToast("ไม่มีโค้ดผลลัพธ์ให้คัดลอก");
+                return;
+            }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(val).then(() => {
+                    showToast("คัดลอกโค้ดลงคลิปบอร์ดเรียบร้อยแล้ว");
+                }).catch(() => {
+                    fallbackCopy(val);
+                });
+            } else {
+                fallbackCopy(val);
+            }
+        });
+
+        function fallbackCopy(text) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.left = '-9999px';
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast("คัดลอกโค้ดเรียบร้อยแล้ว");
+        }
+
+        // Download Action
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            const val = outCode.value;
+            if (!val) {
+                showToast("ไม่มีไฟล์ผลลัพธ์ให้ดาวน์โหลด");
+                return;
+            }
+            const blob = new Blob([val], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Protected_ITlnwza77_" + Math.floor(Math.random() * 10000) + ".lua";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("ดาวน์โหลดไฟล์ .lua เรียบร้อยแล้ว");
+        });
+    </script>
+</body>
+</html>
